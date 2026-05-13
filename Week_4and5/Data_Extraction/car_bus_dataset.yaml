@@ -1,0 +1,9 @@
+path: /Users/divyanjaligopisetty/Computer-Vision/Week_4and5/Data_Extraction
+
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: bus
+  1: car
