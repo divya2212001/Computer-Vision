@@ -1,48 +1,107 @@
-# People Detection with YOLOv8
+# Computer Vision Internship Pipeline (YOLO Detection)
 
-A computer vision project for detecting people (and other objects) in videos using **YOLOv8**. The repository includes a complete pipeline for frame extraction, dataset preparation, auto-labeling, model training/inference, and video post-processing.
+This repository contains an end-to-end pipeline for **video → frames → dataset → training → prediction → final video** using **Ultralytics YOLO**.
 
----
+It is structured to match the internship workflow described in the prompts:
 
-
-## Overview
-
-This project demonstrates an end-to-end workflow for building a people detection system:
-
-1. **Frame Extraction**: Convert input video into image frames.
-2. **Dataset Splitting**: Organize frames into `train`, `val`, and `test` sets.
-3. **Auto Labeling**: Use a pretrained YOLOv8 model to generate bounding-box annotations in Label Studio format.
-4. **Training & Inference**: Fine-tune YOLOv8 on custom data or run inference directly.
-5. **Video Processing**: A Colab notebook stitches processed frames back into videos with side-by-side comparisons (raw, detection, segmentation).
+- **Week 1:** extract frames with `ffmpeg` + reconstruct video
+- **Week 2:** setup `venv`, install `ultralytics`, run pretrained YOLO detection
+- **Week 3:** inspect metrics + semantic segmentation concepts
+- **Week 4:** understand YOLO dataset meta files + labeling workflow (label-studio)
+- **Week 5:** prepare labels, scale images, train, predict on test, and generate final output video
 
 ---
 
-## Project Structure
+## End-to-end pipeline
+
+This repo is organized to reflect the internship tasks:
+
+### Week 1 — Video frames + reconstruction
+
+- Download a short YouTube video.
+- Extract frames using `ffmpeg`.
+- Reconstruct a 1-minute video from frames (same FPS).
+- Merge new audio into the reconstructed video.
+
+### Week 2 — Environment + YOLO pretrained detection
+
+- Create a Python virtual environment with `venv`.
+- Install `ultralytics`.
+- Run pretrained YOLO object detection to generate example outputs.
+
+### Week 3 — Performance + segmentation (concept + code)
+
+- Inspect metrics produced by YOLO runs.
+- Explore semantic segmentation (pixelwise object coloring).
+
+### Week 4 — YOLO dataset meta + labeling
+
+- Understand dataset YAML + label format.
+- Use **label-studio** to generate YOLO-format labels (`.txt`) and metadata (`data.yaml`, `train.txt`, `val.txt`).
+
+### Week 5 — Scale images + train/test + final video
+
+- Scale images to training resolution (preserve aspect ratio).
+- Train YOLO on the labeled dataset.
+- Predict on test images and stitch final videos.
+
+> The exact dataset/scripts you executed for Week 5 in this repo are stored under the `week 5/` directory.
+
+---
+
+## What’s included in this repository
+
+1. Frame extraction + dataset splitting scripts (Week 5 notes and examples).
+2. YOLO training configuration (`data.yml` / dataset YAML, args).
+3. Image scaling commands and notes.
+4. Train / predict commands and example outputs.
+5. Final video output artifacts.
+
+---
+
+## Folder structure (matches your Week 5 outputs)
 
 ```
 Computer-Vision/
-├── People_Detection/
-│   ├── data.yml                     # YOLOv8 dataset configuration
-│   ├── dataset/
-│   │   ├── images/
-│   │   │   ├── train/               # Training images
-│   │   │   ├── val/                 # Validation images
-│   │   │   └── test/                # Test images
-│   │   ├── images_prev/             # Previous image sets (backup)
-│   │   ├── labels/                  # YOLO format labels (.txt)
-│   │   └── raw_frames/              # Frames extracted from video
-│   └── scripts/
-│       ├── extract_frames.py        # Extract frames from MP4
-│       ├── split_dataset.py         # Split into train/val/test
-│       ├── auto_label.py            # Generate pre-labels with YOLOv8
-│       └── yolov8n.pt               # Pretrained nano model (auto-downloaded)
-├── week/
-│   └── detect.py                    # Quick YOLOv8 inference script
-├── week3_task2.ipynb                # Colab notebook: full video pipeline
-├── people-detection.mp4             # Sample input video
-├── requirements.txt                 # Python dependencies
-└── Readme.md                        # This file
+├── requirements.txt
+├── Readme.md
+├── week 1/
+├── week 2/
+├── week 3/
+├── week 4/
+└── week 5/
+    ├── Task1 - Data _Extraction/
+    │   ├── traffic.mp4
+    │   ├── extract_frames.py
+    │   ├── split_dataset.py
+    │   ├── car_bus_dataset.yaml           # dataset config used by YOLO
+    │   ├── train.txt / val.txt / test.txt
+    │   ├── images/train|val|test/
+    │   └── labels/train|val|test/       # YOLO label .txt files (class + normalized box)
+    │
+    ├── Task2 - Scaling/
+    │   └── yml.md                          # ffmpeg scaling commands
+    │   └── images/*_scaled/              # scaled images output (example)
+    │
+    ├── Task3 - Training/
+    │   ├── args.yaml
+    │   ├── yml.md
+    │   └── weights/                      # e.g., best.pt, last.pt
+    │   └── results*.png / results.csv / curves...
+    │
+    ├── Task4 - Testing/
+    │   ├── yml.md
+    │   └── predict-*/                    # saved prediction frames
+    │
+    └── Task5 - Final_Output/
+        ├── traffic.mp4                  # final annotated/rebuilt video
+        └── yml.md
 ```
+
+> Notes:
+>
+> - YOLO expects labels in `labels/<split>/` with the same base filename as the corresponding images in `images/<split>/`.
+> - Your Week 5 dataset uses a **2-class** setup (see `car_bus_dataset.yaml`).
 
 ---
 
@@ -50,9 +109,9 @@ Computer-Vision/
 
 - **Python**: 3.11
 - **ffmpeg**: Required for video encoding/decoding in the Colab notebook and local video processing.
-  - *macOS*: `brew install ffmpeg`
-  - *Ubuntu/Debian*: `sudo apt-get install ffmpeg`
-  - *Windows*: [Download from ffmpeg.org](https://ffmpeg.org/download.html)
+  - _macOS_: `brew install ffmpeg`
+  - _Ubuntu/Debian_: `sudo apt-get install ffmpeg`
+  - _Windows_: [Download from ffmpeg.org](https://ffmpeg.org/download.html)
 - **GPU** (optional but recommended): CUDA-compatible GPU for faster YOLOv8 training/inference.
 
 ---
@@ -60,11 +119,13 @@ Computer-Vision/
 ## Installation
 
 1. **Clone the repository** (if applicable) and navigate to the project root:
+
    ```bash
    cd Computer-Vision
    ```
 
 2. **Create a virtual environment** (recommended):
+
    ```bash
    python3.11 -m venv venv
    source venv/bin/activate        # On Windows: venv\Scripts\activate
@@ -109,20 +170,61 @@ python split_dataset.py
 
 ---
 
-### 3. Auto Labeling with YOLOv8
+### 3. Label Studio setup (import images + export YOLO labels)
 
-Generate bounding-box pre-labels for training images using a pretrained YOLOv8 nano model. The results are exported in **Label Studio** JSON format.
+This repo follows the Week 4 labeling workflow: you manually annotate images in **label-studio**, then export YOLO-format bounding-box labels.
+
+#### 3.1 Create a separate virtual environment for label-studio
+
+> Do NOT install label-studio inside your YOLO/ultralytics environment.
 
 ```bash
-cd People_Detection/scripts
-python auto_label.py
+python3 -m venv labelstudio-env
+source labelstudio-env/bin/activate
+pip install -U label-studio
 ```
 
-- **Output**: `prelabels.json`
-- **Classes mapped**: `person`, `car`, `truck`, `bus`, `bike` (motorcycle)
-- **Confidence threshold**: `0.35`
+Start the server:
 
-> You can import `prelabels.json` into [Label Studio](https://labelstud.io/) to review and correct annotations before exporting final YOLO `.txt` labels.
+```bash
+label-studio
+```
+
+Open in browser:
+
+- http://localhost:8080
+
+#### 3.2 Create a project and choose labels
+
+For this repo’s dataset (`car_bus_dataset.yaml`), use 2 classes:
+
+- `bus`
+- `car`
+
+Create bounding-box annotations for these classes.
+
+#### 3.3 Import images for annotation (train + val)
+
+In the label-studio UI, add tasks/images from your folders:
+
+- `week 5/Task1 - Data _Extraction/images/train/`
+- `week 5/Task1 - Data _Extraction/images/val/`
+
+#### 3.4 Annotate
+
+- Use the rectangle/bounding-box tool.
+- Annotate all objects in the images.
+
+#### 3.5 Export YOLO labels
+
+Export the labeled dataset in **YOLO detection** format (normalized `.txt` per image).
+
+Place exported label files into:
+
+- `week 5/Task1 - Data _Extraction/labels/train/`
+- `week 5/Task1 - Data _Extraction/labels/val/`
+
+> Ensure exported label filenames match the image base filenames (e.g., `frame_001.jpg` ↔ `frame_001.txt`).
 
 ---
 
@@ -131,11 +233,13 @@ python auto_label.py
 The dataset is configured via `People_Detection/data.yml`:
 
 ```yaml
-path: dataset
+path: /Users/divyanjaligopisetty/Computer-Vision/week 5/Task1 - Data _Extraction
 train: images/train
 val: images/val
+test: images/test
 names:
-  0: person
+  0: bus
+  1: car
 ```
 
 **Quick inference example** (from the `week/` directory):
@@ -172,15 +276,13 @@ Open `week3_task2.ipynb` in [Google Colab](https://colab.research.google.com/) f
 
 `People_Detection/data.yml` follows the [Ultralytics YOLO dataset format](https://docs.ultralytics.com/datasets/detect/).
 
-| Key     | Value                                    |
-|---------|------------------------------------------|
-| `path`  | Root directory of the dataset            |
-| `train` | Relative path to training images         |
-| `val`   | Relative path to validation images       |
-| `names` | Class index-to-name mapping              |
+| Key     | Value                              |
+| ------- | ---------------------------------- |
+| `path`  | Root directory of the dataset      |
+| `train` | Relative path to training images   |
+| `val`   | Relative path to validation images |
+| `names` | Class index-to-name mapping        |
 
 Make sure your label files (`.txt`) are placed under `People_Detection/dataset/labels/train/` and `labels/val/` with the same filenames as the images.
 
 ---
-
-
