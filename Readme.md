@@ -317,7 +317,7 @@ This repo contains the end-to-end pipeline used in **Road_pothole_detection**: *
 
 ## Pipeline (as done in `Road_pothole_Detection/`)
 
-### 1) Frame extraction
+### 1. Frame extraction
 
 Extract frames from `road.mp4`.
 
@@ -327,7 +327,7 @@ python Road_pothole_Detection/Data_Extraction/extract_frames.py
 
 - Writes frames into: `Road_pothole_Detection/Data_Extraction/dataset/raw_images/` (see script: `extract_frames.py`)
 
-### 2) Create train/val/test splits + YOLO label structure
+### 2. Create train/val/test splits + YOLO label structure
 
 Split images and copy matching YOLO `.txt` labels into the expected folder structure.
 
@@ -337,17 +337,81 @@ python Road_pothole_Detection/Data_Extraction/split_dataset.py
 
 - Uses YOLO label filenames with the same stem as images.
 - Output folders are expected under `Road_pothole_Detection/Data_Extraction/images/*` and `Road_pothole_Detection/Data_Extraction/labels/*`.
+### 3. Label Studio setup (import images + export YOLO labels)
 
-### 3) Dataset configuration (YOLO)
+This repo follows the Week 4 labeling workflow: you manually annotate images in **label-studio**, then export YOLO-format bounding-box labels.
 
-Your dataset YAML is:
+#### 3.1 Create a separate virtual environment for label-studio
 
-- `Road_pothole_Detection/Data_Extraction/road.yaml`
+> Do NOT install label-studio inside your YOLO/ultralytics environment.
 
-Example:
+```bash
+python3 -m venv labelstudio-env
+source labelstudio-env/bin/activate
+pip install -U label-studio
+```
+
+Start the server:
+
+```bash
+label-studio
+```
+
+Open in browser:
+
+- http://localhost:8080
+
+#### 3.2 Create a project and choose labels
+
+For this repo’s dataset (`road.yaml`), use 1 class:
+
+- `pothole`
+
+
+Create bounding-box annotations for these classes.
+
+Label Studio Interface:
+
+  <View>
+    <Image name="image" value="$image"/>
+
+    <RectangleLabels name="label" toName="image">
+      <Label value="road_damage" background="red"/>
+    </RectangleLabels>
+  </View>
+
+#### 3.3 Import images for annotation (train + val)
+
+In the label-studio UI, add tasks/images from your folders:
+
+- `week 5/Task1 - Data _Extraction/images/train/`
+- `week 5/Task1 - Data _Extraction/images/val/`
+
+#### 3.4 Annotate
+
+- Use the rectangle/bounding-box tool.
+- Annotate all objects in the images.
+
+#### 3.5 Export YOLO labels
+
+Export the labeled dataset in **YOLO detection** format (normalized `.txt` per image).
+
+Place exported label files into:
+
+- `week 5/Task1 - Data _Extraction/labels/train/`
+- `week 5/Task1 - Data _Extraction/labels/val/`
+
+> Ensure exported label filenames match the image base filenames (e.g., `frame_001.jpg` ↔ `frame_001.txt`).
+
+---
+
+### 4. Train / Detect
+
+The dataset is configured via `People_Detection/data.yml`:
 
 ```yaml
 path: /Users/divyanjaligopisetty/Computer-Vision/Road_pothole_Detection/Data_Extraction
+
 train: images/train
 val: images/val
 test: images/test
@@ -356,7 +420,14 @@ names:
   0: pothole
 ```
 
-### 4) Train (Ultralytics YOLO)
+**Quick inference example** (from the `week/` directory):
+
+```bash
+cd week
+python detect.py
+```
+
+### 4. Train (Ultralytics YOLO)
 
 Training command:
 
@@ -371,7 +442,7 @@ yolo detect train \
 
 This matches `Road_pothole_Detection/Training/training_command.md`.
 
-### 5) Predict on test images
+### 5. Predict on test images
 
 ```bash
 yolo detect predict \
@@ -383,7 +454,7 @@ yolo detect predict \
 
 This matches `Road_pothole_Detection/Testing/testing_command.md`.
 
-### 6) Predict on a whole video (final output)
+### 6. Predict on a whole video (final output)
 
 ```bash
 yolo detect predict \
@@ -436,7 +507,7 @@ Road_pothole_Detection/
 - **Python**: 3.11
 - **ffmpeg** (required for some video workflows)
   - macOS: `brew install ffmpeg`
-- **GPU** (optional): for faster training/inference
+- **GPU**: for faster training/inference(in colab based work)
 
 ---
 
