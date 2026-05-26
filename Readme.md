@@ -70,18 +70,28 @@ Computer-Vision/
   │   ├── road.yaml
   │   ├── extract_frames.py
   │   ├── split_dataset.py
+  |   ├── train.txt / val.txt / test.txt
+  |   ├── images/train|val|test/
+  |   └── labels/train|val|test/       # YOLO label .txt files (class + normalized box)
   │   └── dataset/
   │       └── raw_images/
+  │
+  ├── Data_scaling/
+  │   └── scaling_command.md                          # ffmpeg scaling commands
+  │   └── images/*_scaled/              # scaled images output (example)
   │
   ├── Training/
   │   └── training_command.md
   │   └── train/
   │       └── weights/best.pt   # trained model output
+  |   └── results*.png / results.csv / curves...
   │
   ├── Testing/
+  │   └── predict-*/  
   │   └── testing_command.md
   │
   └── Final_video/
+      ├── output_road.mp4  
       └── output_command.md
 ├── week 1/
 ├── week 2/
@@ -98,22 +108,22 @@ Computer-Vision/
     │   └── labels/train|val|test/       # YOLO label .txt files (class + normalized box)
     │
     ├── Task2 - Scaling/
-    │   └── yml.md                          # ffmpeg scaling commands
+    │   └── scaling_command.md                          # ffmpeg scaling commands
     │   └── images/*_scaled/              # scaled images output (example)
     │
     ├── Task3 - Training/
     │   ├── args.yaml
-    │   ├── yml.md
+    │   ├── training_command.md
     │   └── weights/                      # e.g., best.pt, last.pt
     │   └── results*.png / results.csv / curves...
     │
     ├── Task4 - Testing/
-    │   ├── yml.md
+    │   ├── testing_command.md
     │   └── predict-*/                    # saved prediction frames
     │
     └── Task5 - Final_Output/
         ├── traffic.mp4                  # final annotated/rebuilt video
-        └── yml.md
+        └── output_command.md
 ├── gitignore 
 ├── Readme.md
 ├── requirements.txt
