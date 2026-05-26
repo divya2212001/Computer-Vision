@@ -9,6 +9,7 @@ It is structured to match the internship workflow described in the prompts:
 - **Week 3:** inspect metrics + semantic segmentation concepts
 - **Week 4:** understand YOLO dataset meta files + labeling workflow (label-studio)
 - **Week 5:** prepare labels, scale images, train, predict on test, and generate final output video
+- **Road_pothole_Detection:** Detects the potholes on road using label studio
 
 ---
 
@@ -63,8 +64,25 @@ This repo is organized to reflect the internship tasks:
 
 ```
 Computer-Vision/
-├── requirements.txt
-├── Readme.md
+├──Road_pothole_Detection/
+  ├── Data_Extraction/
+  │   ├── road.mp4
+  │   ├── road.yaml
+  │   ├── extract_frames.py
+  │   ├── split_dataset.py
+  │   └── dataset/
+  │       └── raw_images/
+  │
+  ├── Training/
+  │   └── training_command.md
+  │   └── train/
+  │       └── weights/best.pt   # trained model output
+  │
+  ├── Testing/
+  │   └── testing_command.md
+  │
+  └── Final_video/
+      └── output_command.md
 ├── week 1/
 ├── week 2/
 ├── week 3/
@@ -96,6 +114,9 @@ Computer-Vision/
     └── Task5 - Final_Output/
         ├── traffic.mp4                  # final annotated/rebuilt video
         └── yml.md
+├── gitignore 
+├── Readme.md
+├── requirements.txt
 ```
 
 > Notes:
@@ -286,3 +307,141 @@ Open `week3_task2.ipynb` in [Google Colab](https://colab.research.google.com/) f
 Make sure your label files (`.txt`) are placed under `People_Detection/dataset/labels/train/` and `labels/val/` with the same filenames as the images.
 
 ---
+
+
+# Road Pothole Detection (YOLO)
+
+This repo contains the end-to-end pipeline used in **Road_pothole_detection**: **video → frames → dataset → training → prediction → final video** using **Ultralytics YOLO**.
+
+---
+
+## Pipeline (as done in `Road_pothole_Detection/`)
+
+### 1) Frame extraction
+
+Extract frames from `road.mp4`.
+
+```bash
+python Road_pothole_Detection/Data_Extraction/extract_frames.py
+```
+
+- Writes frames into: `Road_pothole_Detection/Data_Extraction/dataset/raw_images/` (see script: `extract_frames.py`)
+
+### 2) Create train/val/test splits + YOLO label structure
+
+Split images and copy matching YOLO `.txt` labels into the expected folder structure.
+
+```bash
+python Road_pothole_Detection/Data_Extraction/split_dataset.py
+```
+
+- Uses YOLO label filenames with the same stem as images.
+- Output folders are expected under `Road_pothole_Detection/Data_Extraction/images/*` and `Road_pothole_Detection/Data_Extraction/labels/*`.
+
+### 3) Dataset configuration (YOLO)
+
+Your dataset YAML is:
+
+- `Road_pothole_Detection/Data_Extraction/road.yaml`
+
+Example:
+
+```yaml
+path: /Users/divyanjaligopisetty/Computer-Vision/Road_pothole_Detection/Data_Extraction
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: pothole
+```
+
+### 4) Train (Ultralytics YOLO)
+
+Training command:
+
+```bash
+yolo detect train \
+  data=Road_pothole_Detection/Data_Extraction/road.yaml \
+  model=yolo11n.pt \
+  epochs=50 \
+  imgsz=384 \
+  batch=8
+```
+
+This matches `Road_pothole_Detection/Training/training_command.md`.
+
+### 5) Predict on test images
+
+```bash
+yolo detect predict \
+  model=Road_pothole_Detection/Training/train/weights/best.pt \
+  source=Road_pothole_Detection/Data_Extraction/images/test \
+  conf=0.10 \
+  save=True
+```
+
+This matches `Road_pothole_Detection/Testing/testing_command.md`.
+
+### 6) Predict on a whole video (final output)
+
+```bash
+yolo detect predict \
+  model=Road_pothole_Detection/Training/train/weights/best.pt \
+  source=Road_pothole_Detection/Data_Extraction/road.mp4 \
+  conf=0.10 \
+  show_labels=True \
+  show_conf=True \
+  save=True
+```
+
+This matches `Road_pothole_Detection/Final_video/output_command.md`.
+
+---
+
+## Folder structure (current `Road_pothole_Detection/`)
+
+Relevant directories:
+
+```text
+Road_pothole_Detection/
+├── Data_Extraction/
+│   ├── road.mp4
+│   ├── road.yaml
+│   ├── extract_frames.py
+│   ├── split_dataset.py
+│   └── dataset/
+│       └── raw_images/
+│
+├── Training/
+│   └── training_command.md
+│   └── train/
+│       └── weights/best.pt   # trained model output
+│
+├── Testing/
+│   └── testing_command.md
+│
+└── Final_video/
+    └── output_command.md
+```
+
+> Notes:
+> - YOLO detection labels are expected as normalized `.txt` files (class id + normalized box coords) and must match image stems.
+> - The dataset YAML defines **one class**: `pothole` (`names: {0: pothole}`) in `road.yaml`.
+
+---
+
+## Prerequisites
+
+- **Python**: 3.11
+- **ffmpeg** (required for some video workflows)
+  - macOS: `brew install ffmpeg`
+- **GPU** (optional): for faster training/inference
+
+---
+
+## Install
+
+```bash
+pip install -r requirements.txt
+```
