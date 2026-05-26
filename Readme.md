@@ -468,33 +468,6 @@ yolo detect predict \
 
 This matches `Road_pothole_Detection/Final_video/output_command.md`.
 
----
-
-## Folder structure (current `Road_pothole_Detection/`)
-
-Relevant directories:
-
-```text
-Road_pothole_Detection/
-├── Data_Extraction/
-│   ├── road.mp4
-│   ├── road.yaml
-│   ├── extract_frames.py
-│   ├── split_dataset.py
-│   └── dataset/
-│       └── raw_images/
-│
-├── Training/
-│   └── training_command.md
-│   └── train/
-│       └── weights/best.pt   # trained model output
-│
-├── Testing/
-│   └── testing_command.md
-│
-└── Final_video/
-    └── output_command.md
-```
 
 > Notes:
 > - YOLO detection labels are expected as normalized `.txt` files (class id + normalized box coords) and must match image stems.
