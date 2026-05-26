@@ -1,0 +1,8 @@
+path: /Users/divyanjaligopisetty/Computer-Vision/Road_pothole_Detection/Data_Extraction
+
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: pothole

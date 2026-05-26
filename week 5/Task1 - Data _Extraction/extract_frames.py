@@ -2,7 +2,7 @@ import cv2
 import os
 
 video_path = "traffic.mp4"
-output_folder = "dataset/images"
+output_folder = "dataset/raw_images"
 
 os.makedirs(output_folder, exist_ok=True)
 
